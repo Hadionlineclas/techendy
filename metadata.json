@@ -1,0 +1,10 @@
+{
+  "name": "Techendy",
+  "description": "A premium AI-powered blogging platform focused on the latest AI tools and features, with advanced SEO optimization and real-time analytics.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ],
+  "majorCapabilities": []
+}

@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Playfair Display", serif;
+  
+  --color-background: #F4F4F1;
+  --color-foreground: #1c1917;
+  --color-card: #ffffff;
+  --color-muted: #e7e5e4;
+  --color-muted-foreground: #78716c;
+  --color-border: #e7e5e4;
+  --color-primary: #1c1917;
+  --color-primary-foreground: #fafaf9;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html, body {
+    @apply overflow-x-clip;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif tracking-tight;
+  }
+}
+
+/* Custom Techendy Styles */
+.serif {
+  @apply font-serif;
+}
+
+.tracking-widest-extra {
+  letter-spacing: 0.25em;
+}
+
+.glass-panel {
+  @apply bg-white/90 border border-white/30;
+}
+
+.sidebar-item {
+  @apply transition-all duration-200;
+}
+
+.sidebar-item:hover {
+  @apply bg-black/5 pl-6;
+}
+
+.stats-card {
+  @apply bg-white rounded-xl shadow-sm border border-stone-100;
+}
+
+.robot-bg {
+  @apply absolute bottom-[-20px] right-[-20px] opacity-[0.03] z-0 pointer-events-none;
+}
+
+.markdown-body {
+  @apply prose prose-neutral dark:prose-invert max-w-none break-words;
+}
+
+.ql-editor {
+  @apply min-h-[300px] text-lg leading-relaxed break-words overflow-x-hidden;
+}
+
+.ai-glow {
+  box-shadow: 0 0 40px -10px oklch(0.6 0.25 260 / 0.5);
+}

@@ -1,0 +1,107 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Default Deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    function isVerified() { return isSignedIn() && request.auth.token.email_verified == true; }
+    function isAdmin() { 
+      return isSignedIn() && (
+        request.auth.token.email == 'hadionlineclas@gmail.com' ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+      );
+    }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    // --- User Validation ---
+    function isValidUser(data) {
+      return data.uid == request.auth.uid &&
+             data.email is string &&
+             data.role in ['user', 'admin'] &&
+             data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.keys().size() <= 7;
+    }
+
+    // --- Post Validation ---
+    function isValidPost(data) {
+      return data.title is string && data.title.size() <= 200 &&
+             data.slug is string && data.slug.size() <= 200 &&
+             data.content is string && data.content.size() <= 100000 &&
+             data.authorId is string &&
+             data.status in ['draft', 'published'] &&
+             data.keys().hasAll(['title', 'slug', 'content', 'authorId', 'status']);
+    }
+
+    // --- Category Validation ---
+    function isValidCategory(data) {
+      return data.name is string && data.name.size() <= 50 &&
+             data.slug is string && data.slug.size() <= 50;
+    }
+
+    // --- Comment Validation ---
+    function isValidComment(data) {
+      return data.postId is string &&
+             data.userId == request.auth.uid &&
+             data.content is string && data.content.size() <= 2000;
+    }
+
+    // --- Collections ---
+    
+    // Users
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isSignedIn();
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && isValidId(userId) && isValidUser(incoming());
+      allow update: if isValidId(userId) && isVerified() && (isOwner(userId) || isAdmin()) && 
+                    incoming().role == existing().role;
+      allow delete: if isValidId(userId) && isAdmin();
+    }
+
+    // Posts
+    match /posts/{postId} {
+      allow get: if isValidId(postId) && (resource.data.status == 'published' || isAdmin() || isOwner(resource.data.authorId));
+      allow list: if (resource.data.status == 'published' || isAdmin());
+      allow create: if isVerified() && isValidId(postId) && isValidPost(incoming()) && incoming().authorId == request.auth.uid;
+      allow update: if isValidId(postId) && (
+                      (isVerified() && (isOwner(existing().authorId) || isAdmin()) && isValidPost(incoming()) && (isAdmin() || incoming().authorId == existing().authorId)) ||
+                      (incoming().diff(existing()).affectedKeys().hasOnly(['views']))
+                    );
+      allow delete: if isVerified() && isValidId(postId) && (isOwner(existing().authorId) || isAdmin());
+
+      // Comments subcollection
+      match /comments/{commentId} {
+        allow get: if isValidId(commentId);
+        allow list: if true;
+        allow create: if isVerified() && isValidId(commentId) && isValidComment(incoming());
+        allow update: if isValidId(commentId) && isVerified() && isOwner(existing().userId) && isValidComment(incoming());
+        allow delete: if isValidId(commentId) && isVerified() && (isOwner(existing().userId) || isAdmin());
+      }
+    }
+
+    // Categories
+    match /categories/{categoryId} {
+      allow get: if isValidId(categoryId);
+      allow list: if true;
+      allow create, update, delete: if isAdmin() && isValidId(categoryId) && isValidCategory(incoming());
+    }
+
+    // Settings
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Analytics
+    match /analytics/{docId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin(); // Analytics should be updated by server-side or admin
+    }
+  }
+}

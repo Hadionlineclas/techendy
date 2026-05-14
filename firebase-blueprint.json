@@ -1,0 +1,100 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and metadata",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "bio": { "type": "string" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Post": {
+      "title": "Post",
+      "description": "Blog post content",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "content": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "categoryId": { "type": "string" },
+        "status": { "type": "string", "enum": ["draft", "published"] },
+        "featuredImage": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "views": { "type": "number" },
+        "seoTitle": { "type": "string" },
+        "seoDescription": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["title", "slug", "content", "authorId", "status"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Article categories",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "description": { "type": "string" }
+      },
+      "required": ["name", "slug"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "Post comments",
+      "type": "object",
+      "properties": {
+        "postId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userPhoto": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["postId", "userId", "content"]
+    },
+    "Analytics": {
+      "title": "Analytics",
+      "description": "Daily site metrics",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string" },
+        "views": { "type": "number" },
+        "sessions": { "type": "number" }
+      },
+      "required": ["date"]
+    }
+  },
+  "firestore": {
+    "users": {
+      "schema": "User",
+      "description": "Collection of user profiles"
+    },
+    "posts": {
+      "schema": "Post",
+      "description": "Collection of blog posts"
+    },
+    "categories": {
+      "schema": "Category",
+      "description": "Collection of post categories"
+    },
+    "posts/{postId}/comments": {
+      "schema": "Comment",
+      "description": "Sub-collection of comments for a post"
+    },
+    "analytics": {
+      "schema": "Analytics",
+      "description": "Global analytics data"
+    }
+  }
+}
